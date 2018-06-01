@@ -39,6 +39,7 @@ function =
         |. end
 
 
+makeOutput : String -> List String -> Output
 makeOutput a b =
     Output a b
 
@@ -53,6 +54,7 @@ params =
         |. symbol ")"
 
 
+paramList : a -> List a
 paramList a =
     [ a ]
 
@@ -64,15 +66,6 @@ body =
         |. symbol "}"
 
 
-parse : String -> Output
+parse : String -> Result Error Output
 parse input =
-    let
-        result =
-            Debug.log "output:" (run function input)
-    in
-        case result of
-            Ok r ->
-                r
-
-            Err _ ->
-                { name = "x", params = [] }
+    run function input

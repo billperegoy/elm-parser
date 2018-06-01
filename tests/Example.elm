@@ -20,5 +20,18 @@ suite =
                     parsedResult =
                         Language.parse code
                 in
-                    Expect.equal parsedResult { name = "myfun", params = [ "a" ] }
+                    Expect.equal parsedResult (Ok { name = "myfun", params = [ "a" ] })
+        , test "can extract multiple parameters" <|
+            \_ ->
+                let
+                    code =
+                        """
+                             function myfun(a, b) {
+                             }
+                            """
+
+                    parsedResult =
+                        Language.parse code
+                in
+                    Expect.equal parsedResult (Ok { name = "myfun", params = [ "a", "b" ] })
         ]
