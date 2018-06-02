@@ -1,6 +1,7 @@
 module Language exposing (..)
 
 import Parser exposing (..)
+import Parser.LanguageKit exposing (..)
 import Char
 
 
@@ -24,15 +25,15 @@ variableParser =
         |= keep oneOrMore Char.isLower
 
 
-function : Parser Output
-function =
+functionParser : Parser Output
+functionParser =
     succeed makeOutput
         |. maybeWhitespaceParser
         |. keyword "function"
         |. whitespaceParser
         |= variableParser
         |. maybeWhitespaceParser
-        |= paramsParser
+        |= paramList
         |. maybeWhitespaceParser
         |. body
         |. maybeWhitespaceParser
@@ -44,40 +45,6 @@ makeOutput a b =
     Output a b
 
 
-paramsParser : Parser (List String)
-paramsParser =
-    succeed identity
-        |. symbol "("
-        -- FIXME This seems like a hack
-        |. maybeWhitespaceParser
-        |= andThen (\n -> variableList [ n ]) variableParser
-        |. symbol ")"
-
-
-variableList : List String -> Parser (List String)
-variableList elems =
-    oneOf
-        [ nextVariable
-            |> andThen (\n -> variableList (n :: elems))
-        , succeed (List.reverse elems)
-        ]
-
-
-nextVariable : Parser String
-nextVariable =
-    delayedCommit maybeWhitespaceParser <|
-        succeed identity
-            |. symbol ","
-            |. maybeWhitespaceParser
-            |= variableParser
-            |. maybeWhitespaceParser
-
-
-paramList : a -> List a
-paramList a =
-    [ a ]
-
-
 body : Parser ()
 body =
     symbol "{"
@@ -85,6 +52,18 @@ body =
         |. symbol "}"
 
 
+paramList : Parser (List String)
+paramList =
+    sequence
+        { start = "("
+        , separator = ","
+        , end = ")"
+        , spaces = maybeWhitespaceParser
+        , item = variableParser
+        , trailing = Forbidden
+        }
+
+
 parse : String -> Result Error Output
 parse input =
-    run function input
+    run functionParser input
