@@ -12,10 +12,7 @@ suite =
             \_ ->
                 let
                     code =
-                        """
-                             function myfun(a) {
-                             }
-                            """
+                        "function myfun(a) {}"
 
                     parsedResult =
                         Language.parse code
@@ -25,13 +22,50 @@ suite =
             \_ ->
                 let
                     code =
-                        """
-                             function myfun(a, b) {
-                             }
-                            """
+                        "function myfun(a, b) {}"
 
                     parsedResult =
                         Language.parse code
                 in
                     Expect.equal parsedResult (Ok { name = "myfun", params = [ "a", "b" ] })
+        , test "can handle parameter list with no whitespace" <|
+            \_ ->
+                let
+                    code =
+                        "function myfun(a,b,c) {}"
+
+                    parsedResult =
+                        Language.parse code
+                in
+                    Expect.equal parsedResult (Ok { name = "myfun", params = [ "a", "b", "c" ] })
+        , test "can handle whitespace at end of parameter list" <|
+            \_ ->
+                let
+                    code =
+                        "function myfun(a, b, c ) {}"
+
+                    parsedResult =
+                        Language.parse code
+                in
+                    Expect.equal parsedResult (Ok { name = "myfun", params = [ "a", "b", "c" ] })
+        , test "can handle whitespace at start of parameter list" <|
+            \_ ->
+                let
+                    code =
+                        "function myfun( a, b, c) {}"
+
+                    parsedResult =
+                        Language.parse code
+                in
+                    Expect.equal parsedResult (Ok { name = "myfun", params = [ "a", "b", "c" ] })
+        , test "can handle empty parameter list" <|
+            \_ ->
+                let
+                    code =
+                        "function myfun() {}"
+
+                    parsedResult =
+                        Language.parse code
+                in
+                    Expect.equal parsedResult (Ok { name = "myfun", params = [] })
         ]

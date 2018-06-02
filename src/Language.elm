@@ -46,12 +46,31 @@ makeOutput a b =
 
 params : Parser (List String)
 params =
-    succeed paramList
+    succeed identity
         |. symbol "("
+        -- FIXME This seems like a hack
         |. maybeWhitespace
-        |= variable
-        |. maybeWhitespace
+        |= andThen (\n -> variableList [ n ]) variable
         |. symbol ")"
+
+
+variableList : List String -> Parser (List String)
+variableList elems =
+    oneOf
+        [ nextVariable
+            |> andThen (\n -> variableList (n :: elems))
+        , succeed (List.reverse elems)
+        ]
+
+
+nextVariable : Parser String
+nextVariable =
+    delayedCommit maybeWhitespace <|
+        succeed identity
+            |. symbol ","
+            |. maybeWhitespace
+            |= variable
+            |. maybeWhitespace
 
 
 paramList : a -> List a
