@@ -8,18 +8,18 @@ type alias Output =
     { name : String, params : List String }
 
 
-maybeWhitespace : Parser ()
-maybeWhitespace =
+maybeWhitespaceParser : Parser ()
+maybeWhitespaceParser =
     ignore zeroOrMore (\c -> (c == ' ') || (c == '\n'))
 
 
-whitespace : Parser ()
-whitespace =
+whitespaceParser : Parser ()
+whitespaceParser =
     ignore oneOrMore (\c -> (c == ' ') || (c == '\n'))
 
 
-variable : Parser String
-variable =
+variableParser : Parser String
+variableParser =
     succeed identity
         |= keep oneOrMore Char.isLower
 
@@ -27,15 +27,15 @@ variable =
 function : Parser Output
 function =
     succeed makeOutput
-        |. maybeWhitespace
+        |. maybeWhitespaceParser
         |. keyword "function"
-        |. whitespace
-        |= variable
-        |. maybeWhitespace
-        |= params
-        |. maybeWhitespace
+        |. whitespaceParser
+        |= variableParser
+        |. maybeWhitespaceParser
+        |= paramsParser
+        |. maybeWhitespaceParser
         |. body
-        |. maybeWhitespace
+        |. maybeWhitespaceParser
         |. end
 
 
@@ -44,13 +44,13 @@ makeOutput a b =
     Output a b
 
 
-params : Parser (List String)
-params =
+paramsParser : Parser (List String)
+paramsParser =
     succeed identity
         |. symbol "("
         -- FIXME This seems like a hack
-        |. maybeWhitespace
-        |= andThen (\n -> variableList [ n ]) variable
+        |. maybeWhitespaceParser
+        |= andThen (\n -> variableList [ n ]) variableParser
         |. symbol ")"
 
 
@@ -65,12 +65,12 @@ variableList elems =
 
 nextVariable : Parser String
 nextVariable =
-    delayedCommit maybeWhitespace <|
+    delayedCommit maybeWhitespaceParser <|
         succeed identity
             |. symbol ","
-            |. maybeWhitespace
-            |= variable
-            |. maybeWhitespace
+            |. maybeWhitespaceParser
+            |= variableParser
+            |. maybeWhitespaceParser
 
 
 paramList : a -> List a
@@ -81,7 +81,7 @@ paramList a =
 body : Parser ()
 body =
     symbol "{"
-        |. maybeWhitespace
+        |. maybeWhitespaceParser
         |. symbol "}"
 
 
