@@ -2,6 +2,7 @@ module Example exposing (..)
 
 import Expect exposing (Expectation)
 import Test exposing (..)
+import Tuple
 import Language exposing (..)
 
 
@@ -68,4 +69,24 @@ suite =
                         Language.parse code
                 in
                     Expect.equal parsedResult (Ok { name = "myfun", params = [] })
+        , test "fails on bad syntax" <|
+            \_ ->
+                let
+                    code =
+                        "function myfun() }"
+
+                    parsedResult =
+                        Language.parse code
+                in
+                    Expect.equal (resultIsError parsedResult) True
         ]
+
+
+resultIsError : Result error value -> Bool
+resultIsError result =
+    case result of
+        Ok _ ->
+            False
+
+        Err _ ->
+            True

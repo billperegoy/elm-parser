@@ -1,22 +1,48 @@
 module Language exposing (..)
 
-import Parser exposing (..)
-import Parser.LanguageKit exposing (..)
+import Parser
+    exposing
+        ( run
+        , ignore
+        , end
+        , keyword
+        , succeed
+        , oneOrMore
+        , zeroOrMore
+        , keep
+        , symbol
+        , (|.)
+        , (|=)
+        , Parser
+        , Error
+        )
+import Parser.LanguageKit
+    exposing
+        ( sequence
+        , Trailing(..)
+        )
 import Char
 
 
 type alias Output =
-    { name : String, params : List String }
+    { name : String
+    , params : List String
+    }
 
 
 maybeWhitespaceParser : Parser ()
 maybeWhitespaceParser =
-    ignore zeroOrMore (\c -> (c == ' ') || (c == '\n'))
+    ignore zeroOrMore whitespaceChar
 
 
 whitespaceParser : Parser ()
 whitespaceParser =
-    ignore oneOrMore (\c -> (c == ' ') || (c == '\n'))
+    ignore oneOrMore whitespaceChar
+
+
+whitespaceChar : Char -> Bool
+whitespaceChar char =
+    List.member char [ ' ', '\n', '\t' ]
 
 
 variableParser : Parser String
@@ -41,8 +67,10 @@ functionParser =
 
 
 makeOutput : String -> List String -> Output
-makeOutput a b =
-    Output a b
+makeOutput name params =
+    { name = name
+    , params = params
+    }
 
 
 body : Parser ()
