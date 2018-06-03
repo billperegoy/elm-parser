@@ -59,7 +59,7 @@ functionParser =
         |. whitespaceParser
         |= variableParser
         |. maybeWhitespaceParser
-        |= paramList
+        |= paramListParser
         |. maybeWhitespaceParser
         |. body
         |. maybeWhitespaceParser
@@ -80,8 +80,8 @@ body =
         |. symbol "}"
 
 
-paramList : Parser (List String)
-paramList =
+paramListParser : Parser (List String)
+paramListParser =
     sequence
         { start = "("
         , separator = ","
